@@ -26,9 +26,9 @@ function App() {
             >
               Bar Chart
             </button>
-            {/* <button onClick={() => setView('candlestick')}>
+            <button onClick={() => setView('candlestick')}>
               Candlestick Chart
-            </button> */}
+            </button>
           </div>
           {/* Conditional rendering of StockLineChart, StockBarChart, or StockCandleStickChart based on selected view */}
           {view === 'line' && <StockLineChart />}

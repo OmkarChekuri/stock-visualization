@@ -3,18 +3,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import * as d3 from 'd3';
-import { fetchStockData } from '../store/actions/stockActions';
-import { subscribeToStockUpdates } from '../services/socket';
-import { simulateRealTimeUpdates } from '../services/mockSocketService';
-import { getStocksData } from '../store/selectors/stockSelectors';
-import { accumulateData, validateDataPoints } from '../utils/dataUtils';
+import { fetchStockData } from '../../store/actions/stockActions';
+import { subscribeToStockUpdates } from '../../services/socket';
+import { simulateRealTimeUpdates } from '../../services/mockSocketService';
+import { getStocksData } from '../../store/selectors/stockSelectors';
+import { accumulateData, validateDataPoints } from '../../utils/dataUtils';
 
 const StockLineChart = () => {
   const dispatch = useDispatch();
   const stocksData = useSelector(getStocksData);
   const svgRef = useRef();
   const accumulatedDataRef = useRef({});
-  const [tooltip, setTooltip] = useState(null); // Reintroduce the tooltip state
+  const [tooltip, setTooltip] = useState(null);
   const colors = d3.schemeCategory10;
 
   useEffect(() => {
@@ -106,32 +106,21 @@ const StockLineChart = () => {
             .y((d) => yScale(d.value))
             .curve(d3.curveMonotoneX);
 
-          // Draw one continuous line for each stock symbol with smooth transition
+          // Draw one continuous line for each stock symbol
           svg
-            .selectAll(`.line-${symbol}`)
-            .data([validDataPoints])
-            .join(
-              (enter) =>
-                enter
-                  .append('path')
-                  .attr('class', `line-${symbol}`)
-                  .attr('fill', 'none')
-                  .attr('stroke', colors[index % colors.length])
-                  .attr('stroke-width', 2)
-                  .attr('d', line),
-              (update) =>
-                update
-                  .transition()
-                  .duration(800)
-                  .ease(d3.easeLinear)
-                  .attr('d', line)
-            );
+            .append('path')
+            .datum(validDataPoints)
+            .attr('fill', 'none')
+            .attr('stroke', colors[index % colors.length])
+            .attr('stroke-width', 2)
+            .attr('d', line);
 
           // Draw circles for each data point (dots) with tooltips
           svg
             .selectAll(`.data-point-${symbol}`)
             .data(validDataPoints)
-            .join('circle')
+            .enter()
+            .append('circle')
             .attr('class', `data-point-${symbol}`)
             .attr('cx', (d) => xScale(new Date(d.timestamp)))
             .attr('cy', (d) => yScale(d.value))

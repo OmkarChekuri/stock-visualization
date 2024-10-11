@@ -1,18 +1,19 @@
 // src/components/StockCandleStickChart.js
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import * as d3 from 'd3';
-import { getStocksData } from '../store/selectors/stockSelectors';
-import { accumulateData, validateDataPoints } from '../utils/dataUtils';
+import { getStocksData } from '../../store/selectors/stockSelectors';
+import { accumulateData, validateDataPoints } from '../../utils/dataUtils';
 
 const StockCandleStickChart = () => {
   const stocksData = useSelector(getStocksData);
   const svgRef = useRef();
-  const accumulatedDataRef = useRef({});
-  const [tooltip, setTooltip] = useState(null);
+  const accumulatedDataRef = useRef({}); // Reference to store accumulated data points
+  const colors = d3.schemeCategory10; // D3 color palette for different stocks
 
   useEffect(() => {
+    // Accumulate the stock data to ensure we have historical points for plotting
     accumulatedDataRef.current = accumulateData(
       stocksData,
       accumulatedDataRef.current
@@ -23,11 +24,10 @@ const StockCandleStickChart = () => {
 
     if (validData && validData.length > 0) {
       console.log('Candlestick Chart Data:', accumulatedDataRef.current);
-
       // Set dimensions and margins for the chart
       const width = 800;
       const height = 500;
-      const margin = { top: 40, right: 250, bottom: 70, left: 70 };
+      const margin = { top: 40, right: 200, bottom: 70, left: 70 };
 
       const svg = d3
         .select(svgRef.current)
@@ -80,88 +80,67 @@ const StockCandleStickChart = () => {
         .style('font-size', '14px')
         .style('font-weight', 'bold');
 
-      // Draw the line for each stock with a smooth transition as it moves to the left
+      // Draw lines connecting the center of candlesticks for each stock
       Object.entries(accumulatedDataRef.current).forEach(
         ([symbol, dataPoints], index) => {
-          const color = d3.schemeCategory10[index % 10];
-
           const line = d3
             .line()
             .x((d) => xScale(new Date(d.timestamp)))
             .y((d) => yScale((d.open + d.close) / 2)) // Plot the average of open and close prices
-            .curve(d3.curveMonotoneX);
+            .curve(d3.curveMonotoneX); // Smooth the lines
 
           svg
             .append('path')
-            .datum(dataPoints)
+            .datum(dataPoints) // Use all accumulated data points for this stock
             .attr('fill', 'none')
-            .attr('stroke', color)
+            .attr('stroke', colors[index % colors.length])
             .attr('stroke-width', 2)
-            .attr('d', line)
-            .transition()
-            .duration(800)
-            .ease(d3.easeLinear);
+            .attr('d', line);
         }
       );
 
-      // Draw candlesticks for each stock using all accumulated points with smooth transitions
-      Object.entries(accumulatedDataRef.current).forEach(
-        ([symbol, dataPoints]) => {
-          svg
-            .selectAll(`.candlestick-${symbol}`)
-            .data(dataPoints, (d) => d.timestamp)
-            .join(
-              (enter) =>
-                enter
-                  .append('rect')
-                  .attr('class', `candlestick-${symbol}`)
-                  .attr('x', (d) => xScale(new Date(d.timestamp)) - 5)
-                  .attr('y', (d) => yScale(Math.max(d.open, d.close)))
-                  .attr('width', 10)
-                  .attr('height', (d) =>
-                    Math.abs(yScale(d.open) - yScale(d.close))
-                  )
-                  .attr('fill', (d) => (d.close > d.open ? 'green' : 'red'))
-                  .on('mouseover', (event, d) => {
-                    setTooltip({
-                      x: event.pageX,
-                      y: event.pageY,
-                      open: d.open,
-                      high: d.high,
-                      low: d.low,
-                      close: d.close,
-                      symbol: symbol,
-                      timestamp: d.timestamp,
-                    });
-                  })
-                  .on('mouseout', () => {
-                    setTooltip(null);
-                  }),
-
-              (update) =>
-                update
-                  .transition()
-                  .duration(800)
-                  .ease(d3.easeLinear)
-                  .attr('x', (d) => xScale(new Date(d.timestamp)) - 5)
-                  .attr('y', (d) => yScale(Math.max(d.open, d.close)))
-                  .attr('height', (d) =>
-                    Math.abs(yScale(d.open) - yScale(d.close))
-                  )
-                  .attr('fill', (d) => (d.close > d.open ? 'green' : 'red'))
-            );
-        }
-      );
-
-      // Add legends with stock information
-      const legendSpacing = 80; // Increase the spacing between each stock's legend
+      // Draw candlesticks for each stock using all accumulated points
       Object.entries(accumulatedDataRef.current).forEach(
         ([symbol, dataPoints], index) => {
-          const values = dataPoints.map((d) => d.close);
-          const low = Math.min(...values).toFixed(2);
-          const high = Math.max(...values).toFixed(2);
+          svg
+            .selectAll(`.candlestick-${symbol}`)
+            .data(dataPoints)
+            .enter()
+            .append('rect')
+            .attr('class', `candlestick-${symbol}`)
+            .attr('x', (d) => xScale(new Date(d.timestamp)) - 5)
+            .attr('y', (d) => yScale(Math.max(d.open, d.close)))
+            .attr('width', 10) // Width of the candlestick
+            .attr('height', (d) => Math.abs(yScale(d.open) - yScale(d.close)))
+            .attr('fill', (d) => (d.close > d.open ? 'green' : 'red')); // Green if close > open, else red
+
+          // Draw the high-low lines (wicks) for each candlestick
+          svg
+            .selectAll(`.wick-${symbol}`)
+            .data(dataPoints)
+            .enter()
+            .append('line')
+            .attr('class', `wick-${symbol}`)
+            .attr('x1', (d) => xScale(new Date(d.timestamp)))
+            .attr('x2', (d) => xScale(new Date(d.timestamp)))
+            .attr('y1', (d) => yScale(d.high))
+            .attr('y2', (d) => yScale(d.low))
+            .attr('stroke', 'black')
+            .attr('stroke-width', 1);
+        }
+      );
+
+      // Add a legend with stock symbol and statistics (Low, High, Average)
+      const legendSpacing = 90; // Adjust spacing between each stock's legend
+      Object.entries(accumulatedDataRef.current).forEach(
+        ([symbol, dataPoints], index) => {
+          const lows = dataPoints.map((d) => d.low);
+          const highs = dataPoints.map((d) => d.high);
+          const closes = dataPoints.map((d) => d.close);
+          const low = Math.min(...lows).toFixed(2);
+          const high = Math.max(...highs).toFixed(2);
           const average = (
-            values.reduce((sum, val) => sum + val, 0) / values.length
+            closes.reduce((sum, val) => sum + val, 0) / closes.length
           ).toFixed(2);
 
           svg
@@ -170,7 +149,7 @@ const StockCandleStickChart = () => {
             .attr('y', margin.top + index * legendSpacing)
             .attr('width', 15)
             .attr('height', 15)
-            .attr('fill', d3.schemeCategory10[index % 10]);
+            .attr('fill', colors[index % colors.length]);
 
           svg
             .append('text')
@@ -178,28 +157,33 @@ const StockCandleStickChart = () => {
             .attr('y', margin.top + index * legendSpacing + 12)
             .text(`${symbol}`)
             .style('font-size', '12px')
-            .style('font-weight', 'bold');
+            .style('font-weight', 'bold')
+            .style('alignment-baseline', 'middle');
 
+          // Display Low, High, Average each on a new line
           svg
             .append('text')
             .attr('x', width - margin.right + 40)
             .attr('y', margin.top + index * legendSpacing + 30)
             .text(`Low: ${low}`)
-            .style('font-size', '12px');
+            .style('font-size', '12px')
+            .style('alignment-baseline', 'middle');
 
           svg
             .append('text')
             .attr('x', width - margin.right + 40)
             .attr('y', margin.top + index * legendSpacing + 45)
             .text(`High: ${high}`)
-            .style('font-size', '12px');
+            .style('font-size', '12px')
+            .style('alignment-baseline', 'middle');
 
           svg
             .append('text')
             .attr('x', width - margin.right + 40)
             .attr('y', margin.top + index * legendSpacing + 60)
             .text(`Avg: ${average}`)
-            .style('font-size', '12px');
+            .style('font-size', '12px')
+            .style('alignment-baseline', 'middle');
         }
       );
     }
@@ -210,31 +194,7 @@ const StockCandleStickChart = () => {
       {stocksData.length === 0 ? (
         <p>Loading stock data...</p>
       ) : (
-        <div>
-          <svg ref={svgRef}></svg>
-          {tooltip && (
-            <div
-              style={{
-                position: 'absolute',
-                left: tooltip.x + 10,
-                top: tooltip.y - 10,
-                background: 'white',
-                padding: '5px',
-                border: '1px solid black',
-                borderRadius: '5px',
-                pointerEvents: 'none',
-              }}
-            >
-              <strong>{tooltip.symbol}</strong>
-              <br />
-              Open: {tooltip.open.toFixed(2)} <br />
-              High: {tooltip.high.toFixed(2)} <br />
-              Low: {tooltip.low.toFixed(2)} <br />
-              Close: {tooltip.close.toFixed(2)} <br />
-              Time: {new Date(tooltip.timestamp).toLocaleTimeString()}
-            </div>
-          )}
-        </div>
+        <svg ref={svgRef}></svg>
       )}
     </div>
   );
