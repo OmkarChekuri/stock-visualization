@@ -1,43 +1,71 @@
-import React, { useState } from 'react';
-import StockLineChart from './components/StockLineChart'; // Importing StockLineChart component
-import StockBarChart from './components/StockBarChart'; // Importing StockBarChart component
-import StockCandleStickChart from './components/StockCandleStickChart'; // Importing StockCandleStickChart component
+// src/App.js
+import React from 'react';
 import './App.css';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import NavBar from './components/NavBar';
+import StockCandleStickChart from './components/StockCandleStickChart';
+import StockLineChart from './components/StockLineChart';
+import StockBarChart from './components/StockBarChart';
+import Home from './components/Home';
 
-function App() {
-  const [view, setView] = useState('line'); // State to toggle between chart views
-
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <div style={{ marginTop: '20px' }}>
-          <h2>Real-Time Stock Price Visualization</h2>
-          {/* Buttons to toggle between line chart, bar chart, and candlestick chart */}
-          <div style={{ marginBottom: '20px' }}>
-            <button
-              onClick={() => setView('line')}
-              style={{ marginRight: '10px' }}
-            >
-              Line Chart
-            </button>
-            <button
-              onClick={() => setView('bar')}
-              style={{ marginRight: '10px' }}
-            >
-              Bar Chart
-            </button>
-            <button onClick={() => setView('candlestick')}>
-              Candlestick Chart
-            </button>
-          </div>
-          {/* Conditional rendering of StockLineChart, StockBarChart, or StockCandleStickChart based on selected view */}
-          {view === 'line' && <StockLineChart />}
-          {view === 'bar' && <StockBarChart />}
-          {view === 'candlestick' && <StockCandleStickChart />}
+    <Router>
+      <div className="app">
+        <NavBar />
+        <div className="main-content">
+          <Routes>
+            {/* Home Route with all three charts */}
+            <Route
+              path="/"
+              element={
+                <Home>
+                  <div className="charts-container">
+                    <div className="chart-wrapper">
+                      <StockCandleStickChart />
+                    </div>
+                    <div className="chart-wrapper">
+                      <StockLineChart />
+                    </div>
+                    <div className="chart-wrapper">
+                      <StockBarChart />
+                    </div>
+                  </div>
+                </Home>
+              }
+            />
+
+            {/* Individual Chart Routes */}
+            <Route
+              path="/candlestick-chart"
+              element={
+                <div className="chart-wrapper">
+                  <StockCandleStickChart />
+                </div>
+              }
+            />
+            <Route
+              path="/line-chart"
+              element={
+                <div className="chart-wrapper">
+                  <StockLineChart />
+                </div>
+              }
+            />
+            <Route
+              path="/bar-chart"
+              element={
+                <div className="chart-wrapper">
+                  <StockBarChart />
+                </div>
+              }
+            />
+            <Route path="/settings" element={<h1>Settings</h1>} />
+          </Routes>
         </div>
-      </header>
-    </div>
+      </div>
+    </Router>
   );
-}
+};
 
 export default App;

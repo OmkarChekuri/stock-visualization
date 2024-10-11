@@ -1,58 +1,62 @@
 // src/utils/dataUtils.js
 
-const MAX_POINTS = 50; // Maximum number of points to display for each stock
+//const MAX_POINTS = 50; // Maximum number of points to display for each stock
 
 // Function to accumulate data points for each stock and cap them at MAX_POINTS
-export const accumulateData = (newData, accumulatedData) => {
-  accumulatedData = accumulatedData || {};
+// src/utils/dataUtils.js
+// src/utils/dataUtils.js
+
+// Function to accumulate data points for each stock and cap them at MAX_POINTS
+// src/utils/dataUtils.js
+// Inside the component that uses accumulated data
+//const maxPoints = useSelector((state) => state.settings.maxPoints);
+
+// Function to accumulate data points for each stock and cap them at MAX_POINTS
+// Function to accumulate data points for each stock and cap them at maxPoints
+// src/utils/dataUtils.js
+
+// Function to accumulate data points for each stock and cap them at maxPoints
+// src/utils/dataUtils.js
+
+// Function to accumulate data points for each stock and cap them at maxPoints
+export const accumulateData = (
+  newData,
+  accumulatedData = {},
+  maxPoints = 15
+) => {
+  const newAccumulatedData = { ...accumulatedData }; // Create a shallow copy to avoid mutation
 
   newData.forEach((stock) => {
-    if (!accumulatedData[stock.symbol]) {
-      accumulatedData[stock.symbol] = [];
+    if (!newAccumulatedData[stock.symbol]) {
+      newAccumulatedData[stock.symbol] = [];
     }
 
-    // Append new data points, keeping all relevant fields for both line and candlestick charts
-    accumulatedData[stock.symbol] = [
-      ...accumulatedData[stock.symbol],
-      ...stock.data.map((dataPoint) => ({
-        timestamp: dataPoint.timestamp,
-        value: dataPoint.value !== undefined ? dataPoint.value : null, // Store value if available
-        open: dataPoint.open !== undefined ? dataPoint.open : null, // Store open price if available
-        high: dataPoint.high !== undefined ? dataPoint.high : null, // Store high price if available
-        low: dataPoint.low !== undefined ? dataPoint.low : null, // Store low price if available
-        close: dataPoint.close !== undefined ? dataPoint.close : null, // Store close price if available
-      })),
-    ].slice(-MAX_POINTS); // Keep only the latest MAX_POINTS items
+    // Append new data points, keeping the last maxPoints entries
+    newAccumulatedData[stock.symbol] = [
+      ...newAccumulatedData[stock.symbol],
+      ...stock.data,
+    ].slice(-maxPoints); // Keep only the latest maxPoints items
   });
 
-  // Debug: Log the accumulated data to ensure it's correct
-  console.log('Accumulated Data:', accumulatedData);
-
-  return accumulatedData;
+  return newAccumulatedData; // Return the new accumulated data object
 };
 
 // Function to validate and filter out invalid data points
 export const validateDataPoints = (dataPoints) => {
-  return dataPoints.filter((d) => {
-    const isValidDate = !isNaN(new Date(d.timestamp).getTime());
+  return dataPoints.filter((dataPoint) => {
+    // Check if the timestamp is a valid date
+    const isValidDate = !isNaN(new Date(dataPoint.timestamp).getTime());
 
-    // Check if the data point has at least one valid value to be considered valid
+    // Validate the value field for line chart data
     const hasValidValue =
-      d.value !== null && typeof d.value === 'number' && !isNaN(d.value);
-    const hasValidOHLC =
-      d.open !== null &&
-      typeof d.open === 'number' &&
-      !isNaN(d.open) &&
-      d.high !== null &&
-      typeof d.high === 'number' &&
-      !isNaN(d.high) &&
-      d.low !== null &&
-      typeof d.low === 'number' &&
-      !isNaN(d.low) &&
-      d.close !== null &&
-      typeof d.close === 'number' &&
-      !isNaN(d.close);
+      typeof dataPoint.value === 'number' && !isNaN(dataPoint.value);
 
+    // Validate OHLC (Open, High, Low, Close) values for candlestick chart data
+    const hasValidOHLC = ['open', 'high', 'low', 'close'].every(
+      (key) => typeof dataPoint[key] === 'number' && !isNaN(dataPoint[key])
+    );
+
+    // Return true if the data point has a valid date and at least one set of valid values
     return isValidDate && (hasValidValue || hasValidOHLC);
   });
 };

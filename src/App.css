@@ -37,3 +37,34 @@
     transform: translateY(0px);
   }
 }
+
+.charts-container {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.draggable-wrapper {
+  width: 44%;
+  /* Adjust width based on desired chart size */
+  min-width: 250px;
+  /* Minimum size to ensure chart visibility */
+  height: 340px;
+  /* Fixed height for consistent appearance */
+  
+}
+
+#candlestick-chart {
+  top: 10px;
+  left: 10px;
+}
+
+#line-chart {
+  top: 10px;
+  left: 350px;
+}
+
+#bar-chart {
+  top: 10px;
+  left: 690px;
+}

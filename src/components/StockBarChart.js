@@ -12,9 +12,9 @@ const StockBarChart = () => {
 
   useEffect(() => {
     if (accumulatedData && Object.keys(accumulatedData).length > 0) {
-      const width = 800;
-      const height = 500;
-      const margin = { top: 50, right: 300, bottom: 80, left: 70 };
+      const width = 700;
+      const height = 300;
+      const margin = { top: 50, right: 220, bottom: 80, left: 70 };
 
       const svg = d3
         .select(svgRef.current)

@@ -40,9 +40,9 @@ const StockLineChart = () => {
   useEffect(() => {
     const flattenedData = Object.values(accumulatedData).flat();
     if (flattenedData.length > 0) {
-      const width = 800;
-      const height = 500;
-      const margin = { top: 40, right: 220, bottom: 50, left: 70 };
+      const width = 600;
+      const height = 300;
+      const margin = { top: 40, right: 180, bottom: 50, left: 70 };
 
       const svg = d3
         .select(svgRef.current)

@@ -14,12 +14,12 @@ const StockCandleStickChart = () => {
   useEffect(() => {
     const flattenedData = Object.values(accumulatedData).flat();
     if (flattenedData && flattenedData.length > 0) {
-      console.log('Candlestick Chart Data:', accumulatedData);
+      //console.log('Candlestick Chart Data:', accumulatedData);
 
       // Set dimensions and margins for the chart
-      const width = 800;
-      const height = 500;
-      const margin = { top: 40, right: 250, bottom: 70, left: 70 };
+      const width = 600;
+      const height = 300;
+      const margin = { top: 40, right: 180, bottom: 70, left: 70 };
 
       const svg = d3
         .select(svgRef.current)

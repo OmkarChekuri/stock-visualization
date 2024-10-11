@@ -4,21 +4,21 @@
 let stockData = [
   {
     symbol: 'AAPL',
-    baseValue: 25, // Base value for Apple stock
+    baseValue: 15, // Base value for Apple stock
     data: [], // Empty data initially, will be filled with the first timestamp when simulation starts
-    volatility: 0.15, // 5% daily volatility
+    volatility: 0.5, // 5% daily volatility
   },
   {
     symbol: 'GOOGL',
-    baseValue: 50, // Base value for Google stock
+    baseValue: 40, // Base value for Google stock
     data: [],
-    volatility: 0.045, // 4.5% daily volatility
+    volatility: 0.4, // 4.5% daily volatility
   },
   {
     symbol: 'AMZN',
     baseValue: 70, // Base value for Amazon stock
     data: [],
-    volatility: 0.075, // 7.5% daily volatility
+    volatility: 0.3, // 7.5% daily volatility
   },
 ];
 

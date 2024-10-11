@@ -3,8 +3,7 @@ import {
   FETCH_STOCK_DATA,
   ACCUMULATE_STOCK_DATA,
 } from '../actions/stockActions';
-
-const MAX_POINTS = 10; // Maximum number of points to display for each stock
+import { accumulateData } from '../../utils/dataUtils'; // Make sure to import accumulateData
 
 const initialState = {
   stocks: [],
@@ -21,27 +20,21 @@ const stockReducer = (state = initialState, action) => {
     }
 
     case ACCUMULATE_STOCK_DATA: {
-      const accumulatedData = { ...state.accumulatedData };
-      action.payload.forEach((stock) => {
-        if (!accumulatedData[stock.symbol]) {
-          accumulatedData[stock.symbol] = [];
-        }
-
-        // Append new data points while maintaining a maximum of MAX_POINTS
-        accumulatedData[stock.symbol] = [
-          ...accumulatedData[stock.symbol],
-          ...stock.data,
-        ].slice(-MAX_POINTS); // Keep only the latest MAX_POINTS items
-      });
+      // Use the accumulateData function to properly accumulate the data without mutating the state
+      const accumulatedData = accumulateData(
+        action.payload,
+        { ...state.accumulatedData }, // Create a shallow copy to avoid mutation
+        state.maxPoints // Pass maxPoints dynamically if needed
+      );
 
       return {
         ...state,
-        accumulatedData,
+        accumulatedData, // Replace the old accumulatedData with the new copy
       };
     }
 
     default:
-      return state;
+      return state; // Return the existing state for any unrelated actions
   }
 };
 
