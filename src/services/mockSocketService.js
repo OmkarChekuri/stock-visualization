@@ -96,7 +96,7 @@ export const simulateRealTimeUpdates = (callback) => {
     });
 
     callback(updatedData); // Send the new OHLC data points to the callback
-  }, 2000); // Emit data every 2 seconds
+  }, 1000); // Emit data every 2 seconds
 };
 
 // Function to get the initial stock value based on its base value

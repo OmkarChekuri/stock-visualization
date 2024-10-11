@@ -1,6 +1,6 @@
 // src/utils/dataUtils.js
 
-const MAX_POINTS = 10; // Maximum number of points to display for each stock
+const MAX_POINTS = 50; // Maximum number of points to display for each stock
 
 // Function to accumulate data points for each stock and cap them at MAX_POINTS
 export const accumulateData = (newData, accumulatedData) => {
