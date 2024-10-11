@@ -1,55 +1,40 @@
-import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
+import React, { useState } from 'react';
+import StockLineChart from './components/StockLineChart'; // Importing StockLineChart component
+import StockBarChart from './components/StockBarChart'; // Importing StockBarChart component
+import StockCandleStickChart from './components/StockCandleStickChart'; // Importing StockCandleStickChart component
 import './App.css';
 
 function App() {
+  const [view, setView] = useState('line'); // State to toggle between chart views
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
+        <div style={{ marginTop: '20px' }}>
+          <h2>Real-Time Stock Price Visualization</h2>
+          {/* Buttons to toggle between line chart, bar chart, and candlestick chart */}
+          <div style={{ marginBottom: '20px' }}>
+            <button
+              onClick={() => setView('line')}
+              style={{ marginRight: '10px' }}
+            >
+              Line Chart
+            </button>
+            <button
+              onClick={() => setView('bar')}
+              style={{ marginRight: '10px' }}
+            >
+              Bar Chart
+            </button>
+            {/* <button onClick={() => setView('candlestick')}>
+              Candlestick Chart
+            </button> */}
+          </div>
+          {/* Conditional rendering of StockLineChart, StockBarChart, or StockCandleStickChart based on selected view */}
+          {view === 'line' && <StockLineChart />}
+          {view === 'bar' && <StockBarChart />}
+          {view === 'candlestick' && <StockCandleStickChart />}
+        </div>
       </header>
     </div>
   );

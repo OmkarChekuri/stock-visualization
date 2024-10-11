@@ -1,0 +1,128 @@
+import React, { useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import * as d3 from 'd3';
+import { fetchStockData } from '../store/actions/stockActions';
+import { subscribeToStockUpdates } from '../services/socket';
+import { simulateRealTimeUpdates } from '../services/mockSocketService';
+import { getStocksData } from '../store/selectors/stockSelectors'; // Import the memoized selector
+
+const StockChart = () => {
+  const dispatch = useDispatch();
+  const stocks = useSelector(getStocksData); // Use the memoized selector here
+  const loading = stocks.length === 0; // Determine loading state
+  const svgRef = useRef();
+  const accumulatedDataRef = useRef([]); // Use a ref to store accumulated stock data
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Running in development mode');
+    } else if (process.env.NODE_ENV === 'production') {
+      console.log('Running in production mode');
+    } else {
+      console.log('Running in an unknown mode:', process.env.NODE_ENV);
+    }
+
+    if (process.env.REACT_APP_USE_MOCK_DATA === 'false') {
+      simulateRealTimeUpdates((data) => {
+        //console.log('Simulated Stocks data:', data);
+        console.log('simulateRealTimeUpdates');
+
+        dispatch(fetchStockData(data));
+      });
+    } else {
+      console.log('subscribeToStockUpdates');
+      subscribeToStockUpdates((data) => {
+        //console.log('WebSocket received data:', data);
+        // Accumulate the new data point into the existing data array
+        accumulatedDataRef.current = [...accumulatedDataRef.current, data];
+        dispatch(fetchStockData(accumulatedDataRef.current));
+      });
+    }
+  }, [dispatch]);
+
+  /*   useEffect(() => {
+    console.log('Stocks data in second useEffect dd:', stocks); // Debug the stocks data
+    if (stocks && Array.isArray(stocks) && stocks.length > 0) {
+      console.log('Rendering chart with stocks data:', stocks); // Check if the stocks array has data
+    } else {
+      console.log(
+        'Stocks array is either empty or not properly formatted:',
+        stocks
+      );
+    }
+  }, [stocks]); // This will run every time stocks data changes */
+
+  useEffect(() => {
+    //console.log('Stocks data in second useEffect dd:', stocks); // Check if stocks is getting updated
+    if (stocks && stocks.length > 0) {
+      //console.log('Rendering chart with stocks data:', stocks); // Additional debug to see when the chart rendering happens
+
+      // Set dimensions and margins for the chart
+      const width = 800;
+      const height = 400;
+      const margin = { top: 20, right: 30, bottom: 30, left: 40 };
+
+      // Select the SVG element
+      const svg = d3
+        .select(svgRef.current)
+        .attr('width', width)
+        .attr('height', height)
+        .style('background', '#f0f0f0')
+        .style('margin', '20px')
+        .style('overflow', 'visible');
+
+      // Set up the scales
+      const xScale = d3
+        .scaleTime()
+        .domain(d3.extent(stocks, (d) => new Date(d.timestamp)))
+        .range([margin.left, width - margin.right]);
+
+      const yScale = d3
+        .scaleLinear()
+        .domain([0, d3.max(stocks, (d) => d.value)])
+        .range([height - margin.bottom, margin.top]);
+
+      // Create the line generator
+      const line = d3
+        .line()
+        .x((d) => xScale(new Date(d.timestamp)))
+        .y((d) => yScale(d.value))
+        .curve(d3.curveMonotoneX); // Smooth the line
+
+      // Clear previous contents before drawing
+      svg.selectAll('*').remove();
+
+      // Add the X and Y axes
+      svg
+        .append('g')
+        .attr('transform', `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(xScale).ticks(5));
+
+      svg
+        .append('g')
+        .attr('transform', `translate(${margin.left},0)`)
+        .call(d3.axisLeft(yScale).ticks(5));
+
+      // Draw the line on the chart
+      svg
+        .append('path')
+        .datum(stocks)
+        .attr('fill', 'none')
+        .attr('stroke', 'steelblue')
+        .attr('stroke-width', 2)
+        .attr('d', line);
+    }
+  }, [stocks]); // Re-render chart when stock data changes
+
+  return (
+    <div>
+      {loading ? (
+        <p>Loading stock data...</p>
+      ) : (
+        <svg ref={svgRef}></svg> // Render chart once data is ready
+      )}
+    </div>
+  );
+};
+
+export default StockChart;
